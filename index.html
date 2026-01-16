@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Two-City Weather & Time</title>
   <style>
     body {
@@ -30,4 +30,122 @@
 
     .cities {
       display: grid;
-      grid-templ
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .city {
+      border-radius: 12px;
+      padding: 20px;
+      background: #f7f9fc;
+      text-align: center;
+    }
+
+    .city h2 {
+      margin: 0 0 10px;
+    }
+
+    .temp {
+      font-size: 48px;
+      font-weight: bold;
+    }
+
+    .emoji {
+      font-size: 36px;
+      margin-top: 5px;
+    }
+
+    .details, .clock {
+      margin-top: 10px;
+      color: #333;
+      font-size: 18px;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    @media (max-width: 600px) {
+      .cities {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app">
+    <h1>🌤️ Two-City Weather & Time</h1>
+
+    <div class="cities">
+      <div class="city" id="rochester">
+        <h2>Rochester, NY</h2>
+        <div class="temp">--°</div>
+        <div class="emoji">⏳</div>
+        <div class="details">Loading...</div>
+        <div class="clock">Time: <span id="rochester-clock">--:--:--</span></div>
+      </div>
+
+      <div class="city" id="santacruz">
+        <h2>Santa Cruz, CA</h2>
+        <div class="temp">--°</div>
+        <div class="emoji">⏳</div>
+        <div class="details">Loading...</div>
+        <div class="clock">Time: <span id="santacruz-clock">--:--:--</span></div>
+      </div>
+    </div>
+
+    <footer>Data from Open-Meteo • No ads • Just vibes</footer>
+  </div>
+
+  <script>
+    // Weather function
+    async function loadWeather(cityId, lat, lon) {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=fahrenheit`;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        const temp = Math.round(data.current_weather.temperature);
+        const wind = Math.round(data.current_weather.windspeed);
+
+        const cityEl = document.getElementById(cityId);
+        cityEl.querySelector(".temp").textContent = temp + "°F";
+        cityEl.querySelector(".details").textContent = `Wind: ${wind} mph`;
+
+        let emoji = "😐";
+        if (temp < 32) emoji = "🥶";
+        else if (temp < 50) emoji = "🧥";
+        else if (temp < 70) emoji = "🙂";
+        else if (temp < 85) emoji = "😎";
+        else emoji = "🔥";
+
+        cityEl.querySelector(".emoji").textContent = emoji;
+
+      } catch (err) {
+        document.getElementById(cityId).querySelector(".details").textContent = "Weather unavailable 😬";
+      }
+    }
+
+    // Load weather for both cities
+    loadWeather("rochester", 43.1566, -77.6088);
+    loadWeather("santacruz", 36.9741, -122.0308);
+
+    // Clock function
+    function updateClocks() {
+      const rochesterTime = new Date().toLocaleTimeString("en-US", { timeZone: "America/New_York" });
+      const santaCruzTime = new Date().toLocaleTimeString("en-US", { timeZone: "America/Los_Angeles" });
+
+      document.getElementById("rochester-clock").textContent = rochesterTime;
+      document.getElementById("santacruz-clock").textContent = santaCruzTime;
+    }
+
+    setInterval(updateClocks, 1000);
+    updateClocks(); // initial call
+  </script>
+
+</body>
+</html>
